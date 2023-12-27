@@ -2,41 +2,38 @@ import sys,os,ctypes,time
 import numpy as np
 
 class main():
-
     def __init__(self):
-        super().__init__()
         self.start_flash = False
-        target_window = "Settings"#str(input("Target Window: ")
-        print("TEST")
-        old_window_title = ""
-        polling_time = 1 
-        start_time = time.time()
-        elapsed_time = 0
-        target_window_duration = 0
+        self.start_time = time.time()
         
-        for i in range(50):
-            window_title = self.get_focused_window()       
 
-            #Detect window change
-            if old_window_title != window_title:
-                if (old_window_title == target_window):
-                    elapsed_time = time.time() - start_time
-                    start_time = time.time()
-                old_window_title = window_title
+    def check_for_flash(self,polling_time:int) -> bool:
+        old_window_title = ""
+        target_window_duration = 0
+        target_window = "Settings"#str(input("Target Window: ")
+        window_title = self.get_focused_window()       
+        #Detect window change
+        if old_window_title != window_title:
+            if (old_window_title == target_window):
+                elapsed_time = time.time() - self.start_time
+                self.start_time = time.time()
+            old_window_title = window_title
 
-            #Measure how long user focuses on [target_window]
-            if window_title == target_window:
-                target_window_duration += polling_time
+        #Measure how long user focuses on [target_window]
+        if window_title == target_window:
+            target_window_duration += polling_time/1000
 
-            if target_window_duration >= 3:
-                print("SCREEN FLASH")
-                self.start_flash = True
-                target_window_duration = 0
-            
-            print(f"Focused on {window_title}")
+        if target_window_duration >= 3:
+            print("SCREEN FLASH")
+            self.start_flash = True
+            target_window_duration = 0
+        else:
+            self.start_flash = False
 
-            #Check every [polling_time] seconds
-            time.sleep(polling_time)
+        print(f"Focused on {window_title}")
+
+        return self.start_flash
+        
                 
     def get_focused_window(self) -> str:
         """
