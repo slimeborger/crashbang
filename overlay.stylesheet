@@ -1,0 +1,3 @@
+QMainWindow#overlay {
+    background-color: transparent
+}
