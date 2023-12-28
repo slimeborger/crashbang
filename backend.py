@@ -1,15 +1,24 @@
 import sys,os,ctypes,time
 import numpy as np
 
-class main():
+class ScreenCapture():
     def __init__(self):
         self.start_flash = False
         self.start_time = time.time()
-        
+        self.target_window_duration = 0
 
-    def check_for_flash(self,polling_time:int) -> bool:
+
+    def check_for_flash(self,polling_time_ms:int) -> bool:
+        """
+        Check if the user needs to be flashed by using [get_focused_window()] to see if
+        the user is focusing on a [target_window] for more than [] seconds. Returns the bool 
+        [start_flash] which can be used to do GUI processes.
+
+        Arguments:
+        * polling_time (int): Time in ms to be added.
+
+        """
         old_window_title = ""
-        target_window_duration = 0
         target_window = "Settings"#str(input("Target Window: ")
         window_title = self.get_focused_window()       
         #Detect window change
@@ -18,15 +27,14 @@ class main():
                 elapsed_time = time.time() - self.start_time
                 self.start_time = time.time()
             old_window_title = window_title
-
         #Measure how long user focuses on [target_window]
         if window_title == target_window:
-            target_window_duration += polling_time/1000
+            self.target_window_duration += polling_time_ms
 
-        if target_window_duration >= 3:
+        if self.target_window_duration >= 5000:
             print("SCREEN FLASH")
             self.start_flash = True
-            target_window_duration = 0
+            self.target_window_duration = 0
         else:
             self.start_flash = False
 
@@ -40,7 +48,7 @@ class main():
         Returns the title of the window the user is currently focused on, as a string.
 
         Returns: 
-        * window_title: str
+        * window_title (str): The title of the window.
         """    
 
         # Get the handle of the foreground window and get window title string length via ctypes
@@ -57,4 +65,4 @@ class main():
 
 
 if __name__ == "__main__":
-    main()
+    ScreenCapture()

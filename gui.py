@@ -1,5 +1,5 @@
 import sys
-import screen_capture
+import backend
 from PyQt6.QtCore import Qt, QFile, QTimer ,pyqtBoundSignal
 from PyQt6.QtGui import QBrush, QColor, QPainter, QPen
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QStackedWidget
@@ -7,8 +7,6 @@ import numpy as np
 import time
 
 class FlashOverlay(QMainWindow):
-
-
 
     def __init__(self):
         super().__init__()
@@ -24,10 +22,12 @@ class FlashOverlay(QMainWindow):
             self.style_sheet = f.read()
         self.setStyleSheet(self.style_sheet)
 
+        #Create an instance of the backend for calls
+        self.backend_inst = backend.ScreenCapture()
 
-
-        self.bg_transparent = True
         self.show_flash_border = False
+        self.bg_transparent = True
+        self.is_flashing = False
 
         #GUI Widgets: Flash, Exit
 
@@ -36,7 +36,7 @@ class FlashOverlay(QMainWindow):
         self.toggle_btn.clicked.connect(self.toggle_background)
         self.draw_btn = QPushButton("Start Code", self)
         self.draw_btn.setGeometry(320, 150, 100, 30)
-        self.draw_btn.clicked.connect(self.check_screen)
+        self.draw_btn.clicked.connect(self.start_screen_check)
 
         self.close_btn = QPushButton("Exit", self)
         self.close_btn.setGeometry(200, 200, 100, 30)
@@ -56,7 +56,11 @@ class FlashOverlay(QMainWindow):
 
     # Called when button pressed, can be customised to change flash animation.
     def flash_sequence(self):
-        self.border_flash(20,1000)
+        self.is_flashing = True
+        self.border_flash(20,100)
+
+    def start_screen_check(self):
+        self.check_screen(500)
 
 
     def border_flash(self,flash_count: int,flash_delay_ms: int):
@@ -70,31 +74,38 @@ class FlashOverlay(QMainWindow):
         """
 
         def recursive_callback():
-            delay_timer.stop()
+            flash_delay_timer.stop()
             self.border_flash(flash_count - 1, flash_delay_ms)
+
         if flash_count <= 0:
             self.show_flash_border = False
+            self.is_flashing = False
             self.update()
             return None
-        delay_timer = QTimer(self)
-        delay_timer.timeout.connect(recursive_callback)
-        delay_timer.start(flash_delay_ms)
+
+        flash_delay_timer = QTimer(self)
+        flash_delay_timer.timeout.connect(recursive_callback)
+        flash_delay_timer.start(flash_delay_ms)
         self.show_flash_border = not self.show_flash_border
         self.update()
 
-    def check_screen(self):
-            def backend_callback():
-                polling_timer.stop()
-                instance = screen_capture.main()
-                check_result = instance.check_for_flash(4000)
-                if check_result == True:
-                    self.flash_sequence()
+    def check_screen(self,poll_count: int = 10):
 
-            polling_timer = QTimer(self)
-            polling_timer.start(4000)
-            polling_timer.timeout.connect(backend_callback)
+        def backend_callback():
+            poll_timer.stop()
+            check_result = self.backend_inst.check_for_flash(polling_time)
+            print(check_result)
+            if check_result == True and self.is_flashing == False:
+                self.flash_sequence()
+            self.check_screen(poll_count - 1)
 
-
+        if poll_count <= 0:
+            print("Finished backend callback")
+            return None
+        poll_timer = QTimer(self)
+        polling_time = 500
+        poll_timer.timeout.connect(backend_callback)
+        poll_timer.start(polling_time)
 
 
 
