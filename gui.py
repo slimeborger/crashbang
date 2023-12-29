@@ -36,7 +36,7 @@ class FlashOverlay(QMainWindow):
         self.toggle_btn.clicked.connect(self.toggle_background)
         self.draw_btn = QPushButton("Start Code", self)
         self.draw_btn.setGeometry(320, 150, 100, 30)
-        self.draw_btn.clicked.connect(self.start_screen_check)
+        self.draw_btn.clicked.connect(self.btn_screen_check)
 
         self.close_btn = QPushButton("Exit", self)
         self.close_btn.setGeometry(200, 200, 100, 30)
@@ -54,19 +54,21 @@ class FlashOverlay(QMainWindow):
         self.update()
 
 
-    # Called when button pressed, can be customised to change flash animation.
-    def flash_sequence(self):
+    def flash_animation(self):
         self.is_flashing = True
         self.border_flash(20,100)
 
-    def start_screen_check(self):
-        self.check_screen(500)
+
+    #A 'button' function (idk what it actually is). 
+    #calls other functions that require args.
+    def btn_screen_check(self):
+        self.check_screen(100,500)
 
 
     def border_flash(self,flash_count: int,flash_delay_ms: int):
         """
-        Recursively function that flips [show_flash_border] to show/hide the flash rectangle. 
-        Uses a QTimer that runs for [flash_delay_ms] milliseconds. Use [flash_count] to count number of flips.
+        Recursive function that flips [show_flash_border] to show/hide the flash rectangle. 
+        Uses a QTimer that runs for [flash_delay_ms] milliseconds. 
 
         Arguments:
         * flash_count (int): Number of flips. Each flash is 2 flips so an even number is better.
@@ -88,24 +90,33 @@ class FlashOverlay(QMainWindow):
         flash_delay_timer.start(flash_delay_ms)
         self.show_flash_border = not self.show_flash_border
         self.update()
+        return None
 
-    def check_screen(self,poll_count: int = 10):
+    def check_screen(self,poll_count: int = 100, polling_time: int = 500):
+        """
+        Recursive function that calls [check_for_flash()] from backend to check if screen needs to be flashed.
+        Uses QTimers that runs for [polling_time] milliseconds. Use [poll_count] to limit number of checks.
+         
+        Arguments:
+        * poll_count (int): Number of times check_screen() is recursively called before it fully terminates.
+        * polling_time (int): Delay in ms between checks
 
+        """
         def backend_callback():
             poll_timer.stop()
             check_result = self.backend_inst.check_for_flash(polling_time)
             print(check_result)
             if check_result == True and self.is_flashing == False:
-                self.flash_sequence()
+                self.flash_animation()
             self.check_screen(poll_count - 1)
 
         if poll_count <= 0:
             print("Finished backend callback")
             return None
         poll_timer = QTimer(self)
-        polling_time = 500
         poll_timer.timeout.connect(backend_callback)
         poll_timer.start(polling_time)
+        return None
 
 
 

@@ -3,6 +3,7 @@ import numpy as np
 
 class ScreenCapture():
     def __init__(self):
+        #[start_flash] determines whether or not
         self.start_flash = False
         self.start_time = time.time()
         self.target_window_duration = 0
@@ -11,11 +12,14 @@ class ScreenCapture():
     def check_for_flash(self,polling_time_ms:int) -> bool:
         """
         Check if the user needs to be flashed by using [get_focused_window()] to see if
-        the user is focusing on a [target_window] for more than [] seconds. Returns the bool 
-        [start_flash] which can be used to do GUI processes.
+        the user is focusing on a [target_window] for more than [] seconds. 
+        Returns a bool which can be used to do GUI processes.
 
         Arguments:
         * polling_time (int): Time in ms to be added.
+
+        Returns:
+        * bool
 
         """
         old_window_title = ""
@@ -33,19 +37,15 @@ class ScreenCapture():
 
         if self.target_window_duration >= 5000:
             print("SCREEN FLASH")
-            self.start_flash = True
             self.target_window_duration = 0
+            return True
         else:
-            self.start_flash = False
-
-        print(f"Focused on {window_title}")
-
-        return self.start_flash
+            return False
         
                 
     def get_focused_window(self) -> str:
         """
-        Returns the title of the window the user is currently focused on, as a string.
+        Return the title of the window the user is currently focused on, as a string.
 
         Returns: 
         * window_title (str): The title of the window.
