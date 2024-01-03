@@ -1,5 +1,4 @@
-import sys,os,ctypes,time
-import numpy as np
+import sys,os,ctypes,time, subprocess
 
 class ScreenCapture():
     def __init__(self):
@@ -7,13 +6,25 @@ class ScreenCapture():
         self.start_flash = False
         self.start_time = time.time()
         self.target_window_duration = 0
+        self.target_window_limit = 4000
 
+        self.options = {
+            "lock_screen": True,
+            "close_active_window": True
+        }
+
+    def options_set(self,option, value):
+        try: 
+            self.options[option] = value
+            print(f"Set {option} to {value}")
+        except KeyError:
+            return 
 
     def check_for_flash(self,polling_time_ms:int) -> bool:
         """
         Check if the user needs to be flashed by using [get_focused_window()] to see if
         the user is focusing on a [target_window] for more than [] seconds. 
-        Returns a bool which can be used to do GUI processes.
+        Returns a bool which can be used for flashing checks
 
         Arguments:
         * polling_time (int): Time in ms to be added.
@@ -34,9 +45,8 @@ class ScreenCapture():
         #Measure how long user focuses on [target_window]
         if window_title == target_window:
             self.target_window_duration += polling_time_ms
-
-        if self.target_window_duration >= 5000:
-            print("SCREEN FLASH")
+        # print(window_title)
+        if self.target_window_duration >= self.target_window_limit:
             self.target_window_duration = 0
             return True
         else:
@@ -61,6 +71,12 @@ class ScreenCapture():
         ctypes.windll.user32.GetWindowTextW(window_handle, buffer, window_title_len)
         
         return str(buffer.value)
+    
+    def lock_screen(self):
+        ctypes.windll.user32.LockWorkStation()
+
+    def close_app(self,window):
+        subprocess.call(["taskkill","/F","/IM","firefox.exe"])
 
 
 
