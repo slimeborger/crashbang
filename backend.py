@@ -2,23 +2,13 @@ import sys,os,ctypes,time, subprocess
 
 class ScreenCapture():
     def __init__(self):
+        
         #[start_flash] determines whether or not
         self.start_flash = False
         self.start_time = time.time()
         self.target_window_duration = 0
         self.target_window_limit = 4000
 
-        self.options = {
-            "lock_screen": True,
-            "close_active_window": True
-        }
-
-    def options_set(self,option, value):
-        try: 
-            self.options[option] = value
-            print(f"Set {option} to {value}")
-        except KeyError:
-            return 
 
     def check_for_flash(self,polling_time_ms:int) -> bool:
         """
@@ -72,12 +62,14 @@ class ScreenCapture():
         
         return str(buffer.value)
     
-    def lock_screen(self):
-        ctypes.windll.user32.LockWorkStation()
+    def lock_screen(self,isTrue:bool):
+        print(isTrue)
+        """Lock the user's workstation if the option is True"""
+        if isTrue:
+            ctypes.windll.user32.LockWorkStation()
 
     def close_app(self,window):
         subprocess.call(["taskkill","/F","/IM","firefox.exe"])
-
 
 
 if __name__ == "__main__":
