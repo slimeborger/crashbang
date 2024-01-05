@@ -47,6 +47,7 @@ class SettingsGUI(QWidget):
         backend_inst = backend.ScreenCapture()
 
         def add_windows_to_dropdown():
+            running_windows_dropdown.clear()
             windowArray = backend_inst.get_running_applications()
             running_windows_dropdown.addItems(windowArray)
 

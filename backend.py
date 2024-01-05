@@ -2,10 +2,16 @@ import sys,os,ctypes,time, subprocess
 
 class ScreenCapture():
     
-    target_window = "23"
+    target_window = ""
 
     def __init__(self):
         self.start_time = time.time()
+        self.blacklist_windows = set(
+            [
+            "Program Manager",
+            "Windows Input Experience"
+            ]
+        )
         self.target_window_duration = 0
         self.target_window_limit = 4000
 
@@ -78,7 +84,7 @@ class ScreenCapture():
                 buffer_length = 256
                 buffer = ctypes.create_unicode_buffer(buffer_length)
                 ctypes.windll.user32.GetWindowTextW(hwnd, buffer, buffer_length)
-                if buffer.value != '':
+                if not (buffer.value == '' or buffer.value in self.blacklist_windows):
                     titles.append(buffer.value)
             return True
 
