@@ -32,8 +32,6 @@ class Flash(QWidget):
 
         self.check_screen(100, 500)
         self.show()
-        print(f"Overlay Call: {Settings.get('lock_screen')}")
-
 
         
     def flash_animation(self):
@@ -87,6 +85,7 @@ class Flash(QWidget):
             poll_count += 1
             if poll_count >= poll_limit:
                 poll_timer.stop()
+                self.backend_inst.exit()
                 print("Finished backend callback")
             else:
                 check_result = self.backend_inst.check_for_flash(polling_time)
@@ -101,8 +100,6 @@ class Flash(QWidget):
 
         def flash_cooldown():
             self.is_flashing = False
-            print(Settings.get("lock_screen"))
-            self.backend_inst.lock_screen(Settings.get("lock_screen"))
          
         def update_alpha(anim:QVariantAnimation):
             self.fullscreen_flash_alpha = int(anim.currentValue())
@@ -118,6 +115,8 @@ class Flash(QWidget):
             )
         
         fading_alpha_anim.start() 
+        self.backend_inst.lock_screen(Settings.get("lock_screen"))
+        self.backend_inst.close_app(Settings.get("close_active_window"),self.backend_inst.get_focused_window()[0])
         fading_alpha_anim.finished.connect(flash_cooldown)
 
 

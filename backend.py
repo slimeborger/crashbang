@@ -1,13 +1,23 @@
 import sys,os,ctypes,time, subprocess
 
 class ScreenCapture():
+    
+    target_window = "23"
+
     def __init__(self):
-        
-        #[start_flash] determines whether or not
-        self.start_flash = False
         self.start_time = time.time()
         self.target_window_duration = 0
         self.target_window_limit = 4000
+
+    @classmethod
+    def set_target_window(cls, window_title:str):
+        cls.target_window = window_title
+        print(f"Set target_window to {cls.target_window}")
+        
+    @classmethod
+    def get_target_window(cls):
+        return cls.target_window
+    
 
 
     def check_for_flash(self,polling_time_ms:int) -> bool:
@@ -23,9 +33,9 @@ class ScreenCapture():
         * bool
 
         """
+        target_window = ScreenCapture.get_target_window()
         old_window_title = ""
-        target_window = "Settings"#str(input("Target Window: ")
-        window_title = self.get_focused_window()       
+        window_title = self.get_focused_window()[1]       
         #Detect window change
         if old_window_title != window_title:
             if (old_window_title == target_window):
@@ -35,7 +45,6 @@ class ScreenCapture():
         #Measure how long user focuses on [target_window]
         if window_title == target_window:
             self.target_window_duration += polling_time_ms
-        # print(window_title)
         if self.target_window_duration >= self.target_window_limit:
             self.target_window_duration = 0
             return True
@@ -59,17 +68,38 @@ class ScreenCapture():
         #Create a C array of unicode characters (buffer) and write title to it.
         buffer = ctypes.create_unicode_buffer(window_title_len)
         ctypes.windll.user32.GetWindowTextW(window_handle, buffer, window_title_len)
-        
-        return str(buffer.value)
+                
+        return [window_handle, str(buffer.value)]
+    
+    def get_running_applications(self):
+        def filter_and_add_window(hwnd, lParam):
+            titles = lParam[0]
+            if ctypes.windll.user32.IsWindowVisible(hwnd):
+                buffer_length = 256
+                buffer = ctypes.create_unicode_buffer(buffer_length)
+                ctypes.windll.user32.GetWindowTextW(hwnd, buffer, buffer_length)
+                if buffer.value != '':
+                    titles.append(buffer.value)
+            return True
+
+        titles = []
+        ctypes.windll.user32.EnumWindows(
+            ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_ulong, ctypes.POINTER(ctypes.py_object))(filter_and_add_window),
+            ctypes.byref(ctypes.py_object(titles))
+        )
+        return titles
     
     def lock_screen(self,isTrue:bool):
-        print(isTrue)
         """Lock the user's workstation if the option is True"""
         if isTrue:
             ctypes.windll.user32.LockWorkStation()
 
-    def close_app(self,window):
-        subprocess.call(["taskkill","/F","/IM","firefox.exe"])
+    def close_app(self,isTrue:bool,window_handle):
+        if isTrue:
+            ctypes.windll.user32.PostMessageW(window_handle, 0x0010, 0, 0)
+            
+    def exit(self):
+        sys.exit()
 
 
 if __name__ == "__main__":
