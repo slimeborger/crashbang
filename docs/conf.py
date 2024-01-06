@@ -7,8 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Crashbang'
-copyright = '2024, Sujay L.'
-author = 'Sujay L.'
+copyright = '2024, slimeborger'
+author = 'slimeborger'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

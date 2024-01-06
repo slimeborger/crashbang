@@ -1,5 +1,5 @@
 .. Crashbang documentation master file, created by
-   sphinx-quickstart on Fri Jan  5 11:48:21 2024.
+   sphinx-quickstart on Sun Jan  7 10:48:03 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 

@@ -2,6 +2,14 @@ import sys,os,ctypes,time, subprocess
 
 class ScreenCapture():
     
+    """
+    Class for observing user's active windows.
+    
+    Class Methods:
+    * set_target_window(window_title)
+    * 
+    """
+
     target_window = ""
 
     def __init__(self):
@@ -28,8 +36,8 @@ class ScreenCapture():
 
     def check_for_flash(self,polling_time_ms:int) -> bool:
         """
-        Check if the user needs to be flashed by using [get_focused_window()] to see if
-        the user is focusing on a [target_window] for more than [] seconds. 
+        Check if the user needs to be flashed by using [get_focused_window()] to see if the user is focusing on a [target_window] for more than [] seconds. 
+        
         Returns a bool which can be used for flashing checks
 
         Arguments:
