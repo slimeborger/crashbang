@@ -3,11 +3,14 @@ import sys,os,ctypes,time, subprocess
 class ScreenCapture():
     
     """
-    Class for observing user's active windows.
+    Class for observing user's active windows and how long they have spent focused on target window(s).
     
     Class Methods:
-    * set_target_window(window_title)
-    * 
+    * :func: `set_target_window`
+    * :func: `get_target_window`
+    
+    
+    
     """
 
     target_window = ""
@@ -66,7 +69,7 @@ class ScreenCapture():
             return False
         
                 
-    def get_focused_window(self) -> str:
+    def get_focused_window(self) -> list[str]:
         """
         Return the title of the window the user is currently focused on, as a string.
 
@@ -83,6 +86,7 @@ class ScreenCapture():
         buffer = ctypes.create_unicode_buffer(window_title_len)
         ctypes.windll.user32.GetWindowTextW(window_handle, buffer, window_title_len)
                 
+        print(buffer.value)
         return [window_handle, str(buffer.value)]
     
     def get_running_applications(self):
@@ -103,17 +107,24 @@ class ScreenCapture():
         )
         return titles
     
-    def lock_screen(self,isTrue:bool):
+class AdminCommands():
+    
+    def __init__():
+        ...
+        
+    @classmethod
+    def lock_screen(cls,isTrue:bool):
         """Lock the user's workstation if the option is True"""
         if isTrue:
             ctypes.windll.user32.LockWorkStation()
 
-    def close_app(self,isTrue:bool,window_handle):
+    @classmethod
+    def close_app(cls,isTrue:bool,window_handle):
         if isTrue:
             ctypes.windll.user32.PostMessageW(window_handle, 0x0010, 0, 0)
-            
-    def exit(self):
-        sys.exit()
+        
+def exit():
+    sys.exit()
 
 
 if __name__ == "__main__":

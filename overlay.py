@@ -45,7 +45,7 @@ class Flash(QWidget):
 
     def border_flash(self, flash_limit: int, flash_delay_ms: int):
         """
-        Recursive function that flips [show_flash_border] to show/hide the flash rectangle. 
+        Function that flips [show_flash_border] to show/hide the flash rectangle. 
         Uses a QTimer that runs for [flash_delay_ms] milliseconds. 
 
         Arguments:
@@ -115,8 +115,10 @@ class Flash(QWidget):
             )
         
         fading_alpha_anim.start() 
-        self.backend_inst.lock_screen(Settings.get("lock_screen"))
-        self.backend_inst.close_app(Settings.get("close_active_window"),self.backend_inst.get_focused_window()[0])
+        backend.AdminCommands.lock_screen(Settings.get("lock_screen"))
+        backend.AdminCommands.close_app(
+            Settings.get("close_active_window"),
+            self.backend_inst.get_focused_window()[0])
         fading_alpha_anim.finished.connect(flash_cooldown)
 
 
@@ -128,4 +130,7 @@ class Flash(QWidget):
         p.setBrush(brush)
         p.drawRect(*self.flash_rect)
         p.fillRect(event.rect(), QColor(0, 0, 0, self.fullscreen_flash_alpha))
+        
+if __name__ == "__main__":
+    Flash()
 

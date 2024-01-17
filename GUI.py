@@ -11,9 +11,7 @@ class SettingsGUI(QWidget):
         self.setWindowTitle("Crashbang - Settings")
         self.setFixedSize(640, 360)
         self.setObjectName("settings")
-        layout = QGridLayout()
-        options = settings.Settings()
-        
+        layout = QGridLayout()        
         
         # Read and apply stylesheet from file to [style_sheet]
         """     
@@ -29,14 +27,14 @@ class SettingsGUI(QWidget):
 
         lock_screen_chkbox = PyQt6.QtWidgets.QCheckBox("Lock Screen",self)
         lock_screen_chkbox.stateChanged.connect(
-            lambda: options.set("lock_screen",lock_screen_chkbox.isChecked())
+            lambda: settings.Settings.set("lock_screen",lock_screen_chkbox.isChecked())
         )
         layout.addWidget(lock_screen_chkbox,1,0)
 
         
         close_app_chkbox = PyQt6.QtWidgets.QCheckBox("Close App",self)
         close_app_chkbox.stateChanged.connect(
-            lambda: options.set("close_active_window",close_app_chkbox.isChecked())
+            lambda: settings.Settings.set("close_active_window",close_app_chkbox.isChecked())
         )
         layout.addWidget(close_app_chkbox,2,0)
 
@@ -59,8 +57,10 @@ class SettingsGUI(QWidget):
         running_windows_dropdown.currentIndexChanged.connect(
             lambda: backend_inst.set_target_window(running_windows_dropdown.currentText())
             )
-        layout.addWidget(running_windows_dropdown,0,2)
+        layout.addWidget(running_windows_dropdown,0,3)
+        
         self.setLayout(layout)
+        add_windows_to_dropdown()
 
 if __name__ == "__main__":
     application = QApplication(sys.argv)
