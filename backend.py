@@ -1,4 +1,5 @@
 import sys,os,ctypes,time, subprocess
+from settings import Settings
 
 class ScreenCapture():
     
@@ -9,8 +10,6 @@ class ScreenCapture():
     * :func: `set_target_window`
     * :func: `get_target_window`
     
-    
-    
     """
 
     target_window = ""
@@ -20,12 +19,12 @@ class ScreenCapture():
         self.blacklist_windows = set(
             [
             "Program Manager",
-            "Windows Input Experience"
+            "Windows Input Experience",
+            "Crashbang - Settings"
             ]
         )
         self.target_window_duration = 0
-        self.target_window_limit = 4000
-
+        
     @classmethod
     def set_target_window(cls, window_title:str):
         cls.target_window = window_title
@@ -37,9 +36,9 @@ class ScreenCapture():
     
 
 
-    def check_for_flash(self,polling_time_ms:int) -> bool:
+    def check_for_flash(self,polling_time_ms:int,target_window_limit:int) -> bool:
         """
-        Check if the user needs to be flashed by using [get_focused_window()] to see if the user is focusing on a [target_window] for more than [] seconds. 
+        Check if the user needs to be flashed by using [get_focused_window()] to see if the user is focusing on a [target_window] for more than [target_window_limit] ms. 
         
         Returns a bool which can be used for flashing checks
 
@@ -60,9 +59,11 @@ class ScreenCapture():
                 self.start_time = time.time()
             old_window_title = window_title
         #Measure how long user focuses on [target_window]
+        print(f"Elapsed: {self.target_window_duration}")
+        print(f"Limit: {target_window_limit}")
         if window_title == target_window:
             self.target_window_duration += polling_time_ms
-        if self.target_window_duration >= self.target_window_limit:
+        if self.target_window_duration >= target_window_limit:
             self.target_window_duration = 0
             return True
         else:
@@ -86,7 +87,6 @@ class ScreenCapture():
         buffer = ctypes.create_unicode_buffer(window_title_len)
         ctypes.windll.user32.GetWindowTextW(window_handle, buffer, window_title_len)
                 
-        print(buffer.value)
         return [window_handle, str(buffer.value)]
     
     def get_running_applications(self):
@@ -107,21 +107,22 @@ class ScreenCapture():
         )
         return titles
     
-class AdminCommands():
+class PostFlashActions():
     
-    def __init__():
-        ...
+    def __init__(self) -> None:
         
-    @classmethod
-    def lock_screen(cls,isTrue:bool):
-        """Lock the user's workstation if the option is True"""
-        if isTrue:
-            ctypes.windll.user32.LockWorkStation()
-
-    @classmethod
-    def close_app(cls,isTrue:bool,window_handle):
-        if isTrue:
+        def exit_window(window_handle: str):
             ctypes.windll.user32.PostMessageW(window_handle, 0x0010, 0, 0)
+            
+        def lock_screen():
+            ctypes.windll.user32.LockWorkStation()
+            
+        if Settings.get("lock_screen") == True:
+            lock_screen()
+        if Settings.get("close_active_window") == True:
+            scr_capture = ScreenCapture()
+            exit_window(scr_capture.get_focused_window()[0])
+
         
 def exit():
     sys.exit()

@@ -3,7 +3,8 @@ class Settings():
 
     options = {
             "lock_screen": False,
-            "close_active_window": False
+            "close_active_window": False,
+            "target_window_limit_ms": 4000
         }
     
     def __init__(self) -> None:

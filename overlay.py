@@ -22,7 +22,9 @@ class Flash(QWidget):
         self.setStyleSheet(self.style_sheet)
 
         # Create an instance of the backend for calls
-        self.backend_inst = backend.ScreenCapture()
+        self.backend_inst = backend
+        self.scr_capture = self.backend_inst.ScreenCapture()
+
 
         self.fullscreen_flash_alpha = 0
         self.border_flash_alpha = 0
@@ -49,10 +51,11 @@ class Flash(QWidget):
         Uses a QTimer that runs for [flash_delay_ms] milliseconds. 
 
         Arguments:
-        * flash_count (int): Number of flips. Each flash is 2 flips so an even number is better.
+        * flash_limit (int): Number of flashes
         * flash_delay_ms (int): Delay in ms between flips
         """
         border_flash_anim = QVariantAnimation(self)
+        
         border_flash_anim.setDuration(flash_delay_ms)
         border_flash_anim.setStartValue(0)
         border_flash_anim.setEndValue(0)
@@ -88,7 +91,7 @@ class Flash(QWidget):
                 self.backend_inst.exit()
                 print("Finished backend callback")
             else:
-                check_result = self.backend_inst.check_for_flash(polling_time)
+                check_result = self.scr_capture.check_for_flash(polling_time, Settings.get("target_window_limit_ms"))
                 if check_result == True and self.is_flashing == False:
                     self.flash_animation()
 
@@ -114,11 +117,9 @@ class Flash(QWidget):
             lambda: update_alpha(fading_alpha_anim)
             )
         
-        fading_alpha_anim.start() 
-        backend.AdminCommands.lock_screen(Settings.get("lock_screen"))
-        backend.AdminCommands.close_app(
-            Settings.get("close_active_window"),
-            self.backend_inst.get_focused_window()[0])
+        fading_alpha_anim.start()
+        
+        backend.PostFlashActions()
         fading_alpha_anim.finished.connect(flash_cooldown)
 
 
